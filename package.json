@@ -1,6 +1,6 @@
 {
-  "name": "@ninjapixel/sscheduler",
-  "version": "0.0.1",
+  "name": "@digvan/sscheduler",
+  "version": "0.0.2",
   "description": "Flexible scheduler to find free time slots in the schedule of a resource",
   "main": "./dist/index.js",
   "scripts": {

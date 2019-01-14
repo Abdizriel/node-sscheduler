@@ -35,8 +35,9 @@
     "npm": ">= 3"
   },
   "dependencies": {
+    "@types/moment-timezone": "^0.5.10",
     "lodash": "^4.13.1",
-    "moment": "^2.23.0"
+    "moment-timezone": "^0.5.23"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.41",

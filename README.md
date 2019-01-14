@@ -7,7 +7,7 @@ Flexible scheduler to find free time slots in the schedule of a resource (which 
 ## Installation
 
 ```bash
-npm install @ninjapixel/sscheduler
+npm install @digvan/sscheduler
 ```
 
 ## Basic usage
@@ -177,6 +177,7 @@ npm run test
 
 * **Mickael Burguet** - *Original author* - [ssense/sscheduler](https://github.com/SSENSE/node-sscheduler)
 * **Matt Michel** -  [ninjaPixel](https://www.ninjapixel.io)
+* **Khash Bejad** -  [digvam](https://github.com/digvan/node-sscheduler)
 
 ## License
 

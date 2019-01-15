@@ -23,7 +23,6 @@ export class Scheduler {
     ];
 
     private convertScheduleSpecificDateToInterval(schedule: ScheduleSpecificDate): Interval {
-        // console.log('timezone', {'global tz': this.gloabalTimezone});
         const interval: Interval = {from: null, to: null};
         const fromDateTime = `${(<Moment> schedule.date).format('YYYY-MM-DD')} ${(<Moment> schedule.from).format('HH:mm')}`;
         const toDateTime = `${(<Moment> schedule.date).format('YYYY-MM-DD')} ${(<Moment> schedule.to).format('HH:mm')}`;
@@ -33,14 +32,12 @@ export class Scheduler {
     }
 
     protected validateAndCastScheduleSpecificDate(schedule: ScheduleSpecificDate, propertyName: string): ScheduleSpecificDate {
-        // moment.tz.setDefault(this.gloabalTimezone);
         const s: ScheduleSpecificDate = {
             date: moment(schedule.date, 'YYYY-MM-DD'),
             from: moment(schedule.from, 'HH:mm'),
             to: moment(schedule.to, 'HH:mm'),
             timezone: moment.tz.zone(this.gloabalTimezone)
         };
-        // console.log({'propertyName': propertyName, 'date': moment(schedule.date, 'YYYY-MM-DD').format()});
 
         if (!(<Moment> s.date).isValid()) {
             throw new Error(`${propertyName} "date" must be a date in the format YYYY-MM-DD`);
@@ -58,7 +55,6 @@ export class Scheduler {
     }
 
     protected validateAndCastDaySchedule(schedule: Schedule): Schedule {
-        // moment.tz.setDefault(this.gloabalTimezone);
         const s: Schedule = {
             from: moment(schedule.from, 'HH:mm'),
             to: moment(schedule.to, 'HH:mm'),

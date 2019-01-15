@@ -490,11 +490,9 @@ export class Scheduler {
     }  
 
     public getAvailabilityWithTimezone(p: AvailabilityParams, timezone: string): Availability {
-        
         if (!(moment.tz.zone(timezone))) {
             throw new Error("Timezone is not valid");
         }
-
         let ave = this.getAvailability(p);
         let res = this.changeAvailabilityToDifferentTimezone(ave, timezone);
         return res;

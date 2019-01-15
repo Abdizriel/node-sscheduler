@@ -23,32 +23,35 @@ As an example, let's say that we want to book a 1 hour appointment with a doctor
   * There are already two one-hour appointments booked on *February 1st* at *1PM* and *2PM*
 
 ```javascript
-import {Scheduler} from '@ssense/sscheduler';
+import {Scheduler} from '@digvan/sscheduler';
 
 const scheduler = new Scheduler();
-const availability = scheduler.getAvailability({
-    from: '2017-02-01',
-    to: '2017-03-01',
+const schedule = {
+    from: '2019-01-10',
+    to: '2019-01-17',
     duration: 60,
     interval: 60,
+    timezone: "America/Los_Angeles",
     schedule: {
         weekdays: {
-            from: '09:00', to: '17:00',
+            from: '08:00', to: '17:00',
             unavailability: [
                 { from: '12:00', to: '13:00' }
             ]
         },
         unavailability: [
             // two different types of unavailability structure
-            { from: '2017-02-20 00:00', to: '2017-02-27 00:00' },
-            { date: '2017-02-15', from: '12:00', to: '13:00' }
+            { from: '2019-01-20 00:00', to: '2019-01-27 00:00' },
+            { date: '2019-01-15', from: '14:00', to: '15:00' }
         ],
         allocated: [
-          { from: '2017-02-01 13:00' , duration: 60 },
-          { from: '2017-02-01 14:00' , duration: 60 }
+          { from: '2019-02-01 13:00' , duration: 60 },
+          { from: '2019-02-01 14:00' , duration: 60 }
         ]
     }
-});
+};
+console.log(scheduler.getAvailabilityWithTimezone(schedule, "America/Los_Angeles"));
+
 ```
 
 The returned value is a structure that looks like the following:
@@ -121,43 +124,59 @@ So, we need to intersect the doctor's availability times with the room's availab
   * The room is out of service from *February 6th* to *February 16th*
 
 ```javascript
-import {Scheduler} from '@ssense/sscheduler';
+import {Scheduler} from '@digvan/sscheduler';
 
 const scheduler = new Scheduler();
-const availability = scheduler.getIntersection({
-    from: '2017-02-01',
-    to: '2017-03-01',
+const schedule1 = {
+    from: '2019-01-10',
+    to: '2019-01-17',
     duration: 60,
     interval: 60,
-    schedules: [
-        // The doctor's schedule
-        {
-            weekdays: {
-                from: '09:00', to: '17:00',
-                unavailability: [
-                    { from: '12:00', to: '13:00' }
-                ]
-            },
+    timezone: "America/Los_Angeles",
+    schedule: {
+        weekdays: {
+            from: '08:00', to: '17:00',
             unavailability: [
-                { from: '2017-02-20 00:00', to: '2017-02-27 00:00' }
-            ],
-            allocated: [
-              { from: '2017-02-01 13:00' , duration: 60 },
-              { from: '2017-02-01 14:00' , duration: 60 }
+                { from: '12:00', to: '13:00' }
             ]
         },
-
-        // The room's schedule
-        {
-            weekdays: {
-                from: '08:00', to: '20:00',
-            },
+        unavailability: [
+            // two different types of unavailability structure
+            { from: '2019-01-20 00:00', to: '2019-01-27 00:00' },
+            { date: '2019-01-15', from: '14:00', to: '15:00' }
+        ],
+        allocated: [
+          { from: '2019-02-01 13:00' , duration: 60 },
+          { from: '2019-02-01 14:00' , duration: 60 }
+        ]
+    }
+};
+const schedule2 = {
+    from: '2019-01-10',
+    to: '2019-01-17',
+    duration: 60,
+    interval: 60,
+    timezone: "CET",
+    schedule: {
+        weekdays: {
+            from: '07:00', to: '18:00',
             unavailability: [
-                { from: '2017-02-06 00:00', to: '2017-02-16 00:00' }
+                { from: '13:00', to: '14:00' }
             ]
-        }
-    ]
-});
+        },
+        unavailability: [
+            // two different types of unavailability structure
+            { from: '2019-01-15 17:00', to: '2019-01-15 18:00' },
+            { date: '2019-01-16', from: '17:00', to: '18:00' }
+        ],
+        allocated: [
+          { from: '2019-02-01 13:00' , duration: 60 },
+          { from: '2019-02-01 14:00' , duration: 60 }
+        ]
+    }
+};
+const availability = scheduler.getAvailabilityWithTimezone(schedule2, "America/Los_Angeles");
+
 ```
 
 ## Build

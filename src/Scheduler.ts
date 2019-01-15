@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 import {
     AvailabilityParams,
     IntersectParams,
@@ -11,6 +11,7 @@ import Moment = moment.Moment;
 
 export class Scheduler {
     protected params: AvailabilityParams;
+    protected gloabalTimezone: any;
     protected daysOfWeek: string[] = [
         'sunday',
         'monday',
@@ -34,7 +35,8 @@ export class Scheduler {
         const s: ScheduleSpecificDate = {
             date: moment(schedule.date, 'YYYY-MM-DD'),
             from: moment(schedule.from, 'HH:mm'),
-            to: moment(schedule.to, 'HH:mm')
+            to: moment(schedule.to, 'HH:mm'),
+            timezone: moment.tz.zone(this.gloabalTimezone)
         };
 
         if (!(<Moment> s.date).isValid()) {
@@ -101,8 +103,8 @@ export class Scheduler {
             throw new Error('to is required');
         }
 
-        p.from = moment(params.from, 'YYYY-MM-DD');
-        p.to = moment(params.to, 'YYYY-MM-DD');
+        p.from = moment(params.from, 'YYYY-MM-DD').tz(params.timezone);
+        p.to = moment(params.to, 'YYYY-MM-DD').tz(params.timezone);
 
         if (!p.from.isValid()) {
             throw new Error('"from" must be a date in the format YYYY-MM-DD');
@@ -114,6 +116,13 @@ export class Scheduler {
 
         if (!p.schedule) {
             throw new Error('schedule is required');
+        }
+
+        if (!p.timezone) {
+            throw new Error('timezone is required');
+        } else {
+            this.gloabalTimezone = p.timezone;
+            moment.tz.setDefault(this.gloabalTimezone);
         }
 
         for (const dayName of this.daysOfWeek) {
@@ -333,11 +342,11 @@ export class Scheduler {
 
         const response: Availability = {};
         const curDate = (<moment.Moment> this.params.from).clone();
-
+        
         // Loop on each day from <curDate> to <toDate>
         while (curDate.isBefore(this.params.to)) {
             const daySchedule: Schedule = this.getScheduleForDay(curDate);
-
+            
             // We have a schedule for this day
             if (daySchedule !== undefined) {
                 const dayAvailability: TimeAvailability[] = [];
@@ -351,7 +360,8 @@ export class Scheduler {
                         dayAvailability.push({
                             time: timeSlotStart.format('HH:mm'),
                             available: false,
-                            reference: daySchedule.reference
+                            reference: daySchedule.reference,
+                            timezone: this.gloabalTimezone
                         });
                         timeSlotStart.add({ minutes: this.params.interval });
                         continue;
@@ -380,7 +390,8 @@ export class Scheduler {
                     dayAvailability.push({
                         time: timeSlotStart.format('HH:mm'),
                         available: isAvailable,
-                        reference: daySchedule.reference
+                        reference: daySchedule.reference,
+                        timezone: this.gloabalTimezone
                     });
 
                     timeSlotStart.add({ minutes: this.params.interval });
@@ -405,6 +416,97 @@ export class Scheduler {
             params.schedule = schedule;
             availabilities.push(this.getAvailability(params));
         }
+
+        if (availabilities.length === 0) {
+            return {};
+        } else if (availabilities.length === 1) {
+            return availabilities[0];
+        }
+
+        for (const day of Object.keys(availabilities[0])) {
+            availabilities[0][day] = availabilities[0][day].map((timeAv: TimeAvailability, idx: number) => {
+                if (timeAv.available) {
+                    timeAv.available = availabilities.length === availabilities.filter((days: any) => {
+                        if (days[day] === undefined) {
+                            return false;
+                        }
+
+                        return 1 === days[day].filter((time: TimeAvailability) => {
+                            return timeAv.time === time.time && time.available;
+                        }).length;
+                    }).length;
+                }
+                return timeAv;
+            });
+        }
+
+        return availabilities[0];
+    }
+
+    private changeAvailabilityToDifferentTimezone(av: Availability, newTimezone: string): Availability {
+        let resultAvailability: Availability = {};
+        let availability = cloneDeep(av);
+        let intermediaryRes = new Array();
+        let intermediaryDates = new Set();
+        for (const day of Object.keys(availability)) {
+           let valArray = availability[day];
+
+           for (let j=0; j < valArray.length; j++) {
+               let timeAv = valArray[j];
+               let time = timeAv.time; 
+               let formattedTime = day + ' ' + time;
+               let oldTimezone = timeAv.timezone;
+               moment.tz.setDefault(oldTimezone);
+               const m = moment(formattedTime);
+               const newM = m.tz(newTimezone);
+               const newTime = newM.format('YYYY-MM-DDTHH:mm')
+               const newDate = newM.format('YYYY-MM-DD');
+               timeAv.time = newTime;
+               timeAv.timezone = newTimezone;
+               intermediaryRes.push(cloneDeep(timeAv));
+               intermediaryDates.add(cloneDeep(newDate));
+           }
+        }
+
+        intermediaryDates.forEach(function(dateKey){
+            var timeArray = new Array();
+            for (let k=0; k < intermediaryRes.length; k++) {
+                const timeAv = cloneDeep(intermediaryRes[k]);
+                const timeAvTime = timeAv.time;
+                const time = moment(timeAvTime).format('YYYY-MM-DD');
+                if (time === dateKey) {
+                    timeAv.time = moment(timeAvTime).format('HH:mm');
+                    timeArray.push(timeAv);
+                }
+            }
+            resultAvailability[dateKey] = timeArray;
+        });
+        
+        return resultAvailability;
+    }  
+
+    public getAvailabilityWithTimezone(p: AvailabilityParams, timezone: string): Availability {
+        if (!(moment.tz.zone(timezone))) {
+            throw new Error("Timezone is not valid");
+        }
+        let ave = this.getAvailability(p);
+        let res = this.changeAvailabilityToDifferentTimezone(ave, timezone);
+        return res;
+    }
+
+    public getIntersectionWithTimezone(p1: AvailabilityParams, p2: AvailabilityParams): Availability {
+        //assume to get result in p1 timezone
+        const availabilities: Availability[] = [];
+        const p1Availability = this.getAvailability(p1);
+        let p2Availability = this.getAvailability(p2);
+        const p1Timezone = p1.timezone;
+        const p2Timezone = p2.timezone;
+       
+        if (p1Timezone !== p2Timezone) {
+            p2Availability = this.changeAvailabilityToDifferentTimezone(p2Availability, p1Timezone);
+        }
+        availabilities.push(p1Availability);
+        availabilities.push(p2Availability);
 
         if (availabilities.length === 0) {
             return {};

@@ -51,9 +51,9 @@ const schedule2 = {
     }
 };
 
-// console.log(scheduler.getAvailability(schedule2));
-let c = scheduler.getIntersectionWithTimezone(schedule1, schedule2);
-console.log(c);
+console.log(scheduler.getAvailabilityWithTimezone(schedule2, "America/Los_Angeles"));
+// let c = scheduler.getIntersectionWithTimezone(schedule1, schedule2);
+// console.log(c);
 
 // const availability2 = scheduler.getIntersection({
 //     from: '2019-01-12',

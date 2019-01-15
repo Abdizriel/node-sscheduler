@@ -27,8 +27,8 @@ export class Scheduler {
         const interval: Interval = {from: null, to: null};
         const fromDateTime = `${(<Moment> schedule.date).format('YYYY-MM-DD')} ${(<Moment> schedule.from).format('HH:mm')}`;
         const toDateTime = `${(<Moment> schedule.date).format('YYYY-MM-DD')} ${(<Moment> schedule.to).format('HH:mm')}`;
-        interval.from = moment(fromDateTime, 'YYYY-MM-DD HH:mm').tz(this.gloabalTimezone);
-        interval.to = moment(toDateTime, 'YYYY-MM-DD HH:mm').tz(this.gloabalTimezone);
+        interval.from = moment(fromDateTime, 'YYYY-MM-DD HH:mm');
+        interval.to = moment(toDateTime, 'YYYY-MM-DD HH:mm');
         return interval;
     }
 
@@ -158,8 +158,8 @@ export class Scheduler {
                     const s = this.validateAndCastScheduleSpecificDate(<ScheduleSpecificDate> unavailability, 'unavailability');
                     interval = this.convertScheduleSpecificDateToInterval(s);
                 } else {
-                    interval.from = moment(unavailability.from, 'YYYY-MM-DD HH:mm').tz(p.timezone);
-                    interval.to = moment(unavailability.to, 'YYYY-MM-DD HH:mm').tz(p.timezone);
+                    interval.from = moment(unavailability.from, 'YYYY-MM-DD HH:mm');
+                    interval.to = moment(unavailability.to, 'YYYY-MM-DD HH:mm');
 
                     if (!interval.from.isValid()) {
                         throw new Error('unavailability "from" must be a date in the format YYYY-MM-DD HH:mm');
@@ -175,7 +175,7 @@ export class Scheduler {
 
         if (p.schedule.allocated) {
             for (const allocated of p.schedule.allocated) {
-                allocated.from = moment(allocated.from, 'YYYY-MM-DD HH:mm').tz(p.timezone);
+                allocated.from = moment(allocated.from, 'YYYY-MM-DD HH:mm');
                 if (!allocated.from.isValid()) {
                     throw new Error('"allocated.from" must be a date in the format YYYY-MM-DD HH:mm');
                 }
@@ -448,7 +448,6 @@ export class Scheduler {
     }
 
     private changeAvailabilityToDifferentTimezone(av: Availability, newTimezone: string): Availability {
-        // console.log('changeAvailabilityToDifferentTimezone called', {'new timezone': newTimezone});
         let resultAvailability: Availability = {};
         let availability = cloneDeep(av);
         let intermediaryRes = new Array();
@@ -463,48 +462,45 @@ export class Scheduler {
                let oldTimezone = timeAv.timezone;
                moment.tz.setDefault(oldTimezone);
                const m = moment(formattedTime);
-            //    console.log({'original time': formattedTime, 'old time': m.format()})
                const newM = m.tz(newTimezone);
-            //    console.log({'new time': newM.format()});
                const newTime = newM.format('YYYY-MM-DDTHH:mm')
                const newDate = newM.format('YYYY-MM-DD');
-            //    console.log({'newTime': newTime, 'newDate': newDate, 'newTimezone': newTimezone});
                timeAv.time = newTime;
                timeAv.timezone = newTimezone;
                intermediaryRes.push(cloneDeep(timeAv));
                intermediaryDates.add(cloneDeep(newDate));
            }
         }
-        
-        // console.log({'intermediaryDates': intermediaryDates});
-        // console.log("first iteration done \n\n\n");
-        // console.log({'intermediaryRes': intermediaryRes});
-        // console.log("******************************* \n\n\n");
 
         intermediaryDates.forEach(function(dateKey){
             var timeArray = new Array();
             for (let k=0; k < intermediaryRes.length; k++) {
                 const timeAv = cloneDeep(intermediaryRes[k]);
                 const timeAvTime = timeAv.time;
-                // console.log("value provided to mement \n\n");
-                // console.log({'timeAvTime': timeAvTime});
                 const time = moment(timeAvTime).format('YYYY-MM-DD');
                 if (time === dateKey) {
                     timeAv.time = moment(timeAvTime).format('HH:mm');
                     timeArray.push(timeAv);
-                    // console.log('match!', {'time': time, 'dateKey': dateKey, 'timeAv': timeAv});
                 }
             }
             resultAvailability[dateKey] = timeArray;
         });
         
-        // console.log({'resultAvailability': resultAvailability});
         return resultAvailability;
     }  
 
-    public getIntersectionWithTimezone(p1: AvailabilityParams, p2: AvailabilityParams): Availability {
+    public getAvailabilityWithTimezone(p: AvailabilityParams, timezone: string): Availability {
         
-        // console.log('getIntersectionWithTimezone', {'p1': p1, 'p2': p2});
+        if (!(moment.tz.zone(timezone))) {
+            throw new Error("Timezone is not valid");
+        }
+
+        let ave = this.getAvailability(p);
+        let res = this.changeAvailabilityToDifferentTimezone(ave, timezone);
+        return res;
+    }
+
+    public getIntersectionWithTimezone(p1: AvailabilityParams, p2: AvailabilityParams): Availability {
         //assume to get result in p1 timezone
         const availabilities: Availability[] = [];
         const p1Availability = this.getAvailability(p1);
@@ -512,11 +508,9 @@ export class Scheduler {
         const p1Timezone = p1.timezone;
         const p2Timezone = p2.timezone;
        
-
         if (p1Timezone !== p2Timezone) {
             p2Availability = this.changeAvailabilityToDifferentTimezone(p2Availability, p1Timezone);
         }
-        // console.log('getIntersectionWithTimezone', {'new p2': p2Availability});
         availabilities.push(p1Availability);
         availabilities.push(p2Availability);
 

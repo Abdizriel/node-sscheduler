@@ -342,11 +342,9 @@ export class Scheduler {
 
         const response: Availability = {};
         const curDate = (<moment.Moment> this.params.from).clone();
-        
         // Loop on each day from <curDate> to <toDate>
         while (curDate.isBefore(this.params.to)) {
             const daySchedule: Schedule = this.getScheduleForDay(curDate);
-            
             // We have a schedule for this day
             if (daySchedule !== undefined) {
                 const dayAvailability: TimeAvailability[] = [];
@@ -444,22 +442,22 @@ export class Scheduler {
     }
 
     private changeAvailabilityToDifferentTimezone(av: Availability, newTimezone: string): Availability {
-        let resultAvailability: Availability = {};
-        let availability = cloneDeep(av);
-        let intermediaryRes = new Array();
-        let intermediaryDates = new Set();
+        const resultAvailability: Availability = {};
+        const availability = cloneDeep(av);
+        const intermediaryRes:TimeAvailability[] = [];
+        const intermediaryDates = new Set();
         for (const day of Object.keys(availability)) {
-           let valArray = availability[day];
+           const valArray = availability[day];
 
-           for (let j=0; j < valArray.length; j++) {
-               let timeAv = valArray[j];
-               let time = timeAv.time; 
-               let formattedTime = day + ' ' + time;
-               let oldTimezone = timeAv.timezone;
+           for (let j = 0; j < valArray.length; j++) {
+               const timeAv = valArray[j];
+               const time = timeAv.time;
+               const formattedTime = day + ' ' + time;
+               const oldTimezone = timeAv.timezone;
                moment.tz.setDefault(oldTimezone);
                const m = moment(formattedTime);
                const newM = m.tz(newTimezone);
-               const newTime = newM.format('YYYY-MM-DDTHH:mm')
+               const newTime = newM.format('YYYY-MM-DDTHH:mm');
                const newDate = newM.format('YYYY-MM-DD');
                timeAv.time = newTime;
                timeAv.timezone = newTimezone;
@@ -468,9 +466,9 @@ export class Scheduler {
            }
         }
 
-        intermediaryDates.forEach(function(dateKey){
-            var timeArray = new Array();
-            for (let k=0; k < intermediaryRes.length; k++) {
+        intermediaryDates.forEach((dateKey) => {
+            const timeArray = [];
+            for (let k = 0; k < intermediaryRes.length; k++) {
                 const timeAv = cloneDeep(intermediaryRes[k]);
                 const timeAvTime = timeAv.time;
                 const time = moment(timeAvTime).format('YYYY-MM-DD');
@@ -481,27 +479,24 @@ export class Scheduler {
             }
             resultAvailability[dateKey] = timeArray;
         });
-        
         return resultAvailability;
-    }  
+    }
 
     public getAvailabilityWithTimezone(p: AvailabilityParams, timezone: string): Availability {
         if (!(moment.tz.zone(timezone))) {
-            throw new Error("Timezone is not valid");
+            throw new Error('Timezone is not valid');
         }
-        let ave = this.getAvailability(p);
-        let res = this.changeAvailabilityToDifferentTimezone(ave, timezone);
-        return res;
+        const ave = this.getAvailability(p);
+        return this.changeAvailabilityToDifferentTimezone(ave, timezone);
     }
 
     public getIntersectionWithTimezone(p1: AvailabilityParams, p2: AvailabilityParams): Availability {
-        //assume to get result in p1 timezone
+        // assume to get result in p1 timezone
         const availabilities: Availability[] = [];
         const p1Availability = this.getAvailability(p1);
         let p2Availability = this.getAvailability(p2);
         const p1Timezone = p1.timezone;
         const p2Timezone = p2.timezone;
-       
         if (p1Timezone !== p2Timezone) {
             p2Availability = this.changeAvailabilityToDifferentTimezone(p2Availability, p1Timezone);
         }
@@ -530,7 +525,19 @@ export class Scheduler {
                 return timeAv;
             });
         }
-
         return availabilities[0];
+    }
+
+    public filterUnAvailablyTimes(availability: Availability): Availability {
+        const resAvailability: Availability = {};
+        for (const day of Object.keys(availability)) {
+            const res = availability[day].filter((timeAv: TimeAvailability) => timeAv.available === true);
+            if (!res || res.length === 0) {
+                delete availability[day];
+            } else {
+                resAvailability[day] = res;
+            }
+        }
+        return resAvailability;
     }
 }

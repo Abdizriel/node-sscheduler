@@ -3,8 +3,8 @@ const {Scheduler} = require("../dist/index");
 const scheduler = new Scheduler();
 
 const schedule1 = {
-    from: '2019-01-10',
-    to: '2019-01-17',
+    from: '2019-01-13',
+    to: '2019-01-15',
     duration: 60,
     interval: 60,
     timezone: "America/Los_Angeles",
@@ -27,8 +27,8 @@ const schedule1 = {
     }
 };
 const schedule2 = {
-    from: '2019-01-10',
-    to: '2019-01-17',
+    from: '2019-01-13',
+    to: '2019-01-15',
     duration: 60,
     interval: 60,
     timezone: "CET",
@@ -51,9 +51,11 @@ const schedule2 = {
     }
 };
 
-console.log(scheduler.getAvailabilityWithTimezone(schedule2, "America/Los_Angeles"));
-// let c = scheduler.getIntersectionWithTimezone(schedule1, schedule2);
-// console.log(c);
+// console.log(scheduler.getAvailabilityWithTimezone(schedule2, "America/Los_Angeles"));
+console.log('start time ' + new Date().getTime());
+let c = scheduler.getIntersectionWithTimezone(schedule1, schedule2);
+console.log(scheduler.filterUnAvailablyTimes(c));
+console.log('end time ' + new Date().getTime());
 
 // const availability2 = scheduler.getIntersection({
 //     from: '2019-01-12',

@@ -51,11 +51,28 @@ const schedule2 = {
     }
 };
 
-// console.log(scheduler.getAvailabilityWithTimezone(schedule2, "America/Los_Angeles"));
-console.log('start time ' + new Date().getTime());
-let c = scheduler.getIntersectionWithTimezone(schedule1, schedule2);
-console.log(scheduler.filterUnAvailablyTimes(c));
-console.log('end time ' + new Date().getTime());
+const tSchedule =  {
+    "from": "2019-01-27",
+    "to": "2019-01-29",
+    "timezone": "America/Los_Angeles",
+    "duration": 30,
+    "interval": 30,
+    "schedule": {
+      "custom_schedule": [
+        {
+          "date": "2019-01-28",
+          "from": "8:00",
+          "to": "15:30"
+        }
+      ]
+    }
+  }
+
+console.log(scheduler.getAvailabilityWithTimezone(tSchedule, "America/Los_Angeles"));
+// console.log('start time ' + new Date().getTime());
+// let c = scheduler.getIntersectionWithTimezone(schedule1, schedule2);
+// console.log(scheduler.filterUnAvailablyTimes(c));
+// console.log('end time ' + new Date().getTime());
 
 // const availability2 = scheduler.getIntersection({
 //     from: '2019-01-12',

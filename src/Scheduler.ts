@@ -332,8 +332,9 @@ export class Scheduler {
                 return customSchedule;
             }
             return (<any> this.params.schedule).weekdays;
+        } else {
+            return customSchedule;
         }
-
         return undefined;
     }
 

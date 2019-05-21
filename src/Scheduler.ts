@@ -284,16 +284,25 @@ export class Scheduler {
 		return false;
 	}
 
-	public isTimeslotAvailable(timeSlotStart: moment.Moment, timeSlotEnd: moment.Moment, allocateds: any[]): boolean {
+	public isTimeslotAvailable(timeSlotStart: moment.Moment, timeSlotEnd: moment.Moment, allocateds: any[]): TimeSlot {
 		for (const allocated of allocateds) {
 			if (this.isTimeSameOrAfter(timeSlotStart, allocated.from) && this.isTimeBefore(timeSlotStart, allocated.to)) {
-				return false;
+				return {
+					available: false,
+					ref: allocated.reference
+				};
 			} else if (this.isTimeBefore(allocated.from, timeSlotEnd) && this.isTimeAfter(allocated.to, timeSlotStart)) {
-				return false;
+				return {
+					available: false,
+					ref: allocated.reference
+				};
 			}
 		}
 
-		return true;
+		return {
+			available: true,
+			ref: undefined
+		};
 	}
 
 	public isDateTimeslotAvailable(dateTimeSlotStart: moment.Moment, dateTimeSlotEnd: moment.Moment, allocateds: any[]): TimeSlot {
@@ -385,15 +394,19 @@ export class Scheduler {
 					// Verify that the resource is not unavailable for the <curTime>
 					if (this.params.schedule.unavailability !== undefined) {
 						const test = this.isDateTimeslotAvailable(timeSlotStart, timeSlotEnd, this.params.schedule.unavailability);
-						isAvailable = test.available
+						isAvailable = test.available;
 						if (!isAvailable) {
-							timeRef = test.ref
+							timeRef = test.ref;
 						}
 					}
 
 					// Verify that the resource is not on a daily break
 					if (isAvailable && daySchedule.unavailability !== undefined) {
-						isAvailable = this.isTimeslotAvailable(timeSlotStart, timeSlotEnd, daySchedule.unavailability);
+						const test = this.isTimeslotAvailable(timeSlotStart, timeSlotEnd, daySchedule.unavailability);
+						isAvailable = test.available;
+						if (!isAvailable) {
+							timeRef = test.ref;
+						}
 					}
 
 					// Verify that the resource is not allocated for the <curTime>
@@ -402,7 +415,11 @@ export class Scheduler {
 							return a.from.year() === timeSlotStart.year() &&
 								a.from.dayOfYear() === timeSlotStart.dayOfYear();
 						});
-						isAvailable = this.isTimeslotAvailable(timeSlotStart, timeSlotEnd, allocatedToday);
+						const test = this.isTimeslotAvailable(timeSlotStart, timeSlotEnd, allocatedToday);
+						isAvailable = test.available;
+						if (!isAvailable) {
+							timeRef = test.ref;
+						}
 					}
 
 					dayAvailability.push({

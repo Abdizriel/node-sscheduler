@@ -5,7 +5,7 @@ import {
 		Availability,
 		TimeAvailability,
 		Schedule, ScheduleSpecificDate, Interval
-} from '../index.d';
+} from '..';
 import { cloneDeep, omit} from 'lodash';
 import Moment = moment.Moment;
 
@@ -14,7 +14,7 @@ interface TimeSlot {
 	ref: string | undefined
 }
 
-export class Scheduler {
+export class SchedulerNormal {
 	protected params: AvailabilityParams;
 	protected daysOfWeek: string[] = [
 		'sunday',
@@ -186,7 +186,7 @@ export class Scheduler {
 			}
 
 			if (p.schedule.custom_schedule) {
-					p.schedule.custom_schedule.forEach((customSchedule, key) => {
+					p.schedule.custom_schedule.forEach((customSchedule: any, key: any) => {
 							p.schedule.custom_schedule[key] = this.validateAndCastScheduleSpecificDate(customSchedule, 'custom_schedule');
 					});
 			}

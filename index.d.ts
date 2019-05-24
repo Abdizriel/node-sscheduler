@@ -62,7 +62,25 @@ export interface IntersectParams extends Params {
     schedules: WeeklySchedule[];
 }
 
-export class Scheduler {
+export class SchedulerTimezone {
+    constructor();
+
+    isTimeBefore(first: moment.Moment, second: moment.Moment): boolean;
+    isTimeSameOrAfter(first: moment.Moment, second: moment.Moment): boolean;
+    isTimeAfter(first: moment.Moment, second: moment.Moment): boolean;
+    isTimeslotAvailable(timeSlotStart: moment.Moment, timeSlotEnd: moment.Moment, allocateds: any[]): boolean;
+
+    isDateTimeBefore(first: moment.Moment, second: moment.Moment): boolean;
+    isDateTimeSameOrAfter(first: moment.Moment, second: moment.Moment): boolean;
+    isDateTimeAfter(first: moment.Moment, second: moment.Moment): boolean;
+    isDateTimeslotAvailable(dateSlotStart: moment.Moment, dateSlotEnd: moment.Moment, allocateds: any[]): boolean;
+
+    getAvailability(params: AvailabilityParams): Availability;
+    getIntersection(params: IntersectParams): Availability;
+    getAvailabilityWithTimezone(params: AvailabilityParams, timezone: string): Availability;
+}
+
+export class SchedulerNormal {
     constructor();
 
     isTimeBefore(first: moment.Moment, second: moment.Moment): boolean;

@@ -1,2 +1,2 @@
-export {Scheduler} from './Scheduler';
-export { SchedulerNormal } from './SchedulerNormal'
+export { SchedulerTimezone } from './SchedulerTimezone';
+export { SchedulerNormal } from './SchedulerNormal';

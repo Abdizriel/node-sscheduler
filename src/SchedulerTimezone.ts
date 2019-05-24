@@ -5,7 +5,7 @@ import {
 	Availability,
 	TimeAvailability,
 	Schedule, ScheduleSpecificDate, Interval
-} from '../index.d';
+} from '..';
 import {cloneDeep, omit} from 'lodash';
 import Moment = moment.Moment;
 
@@ -14,7 +14,7 @@ interface TimeSlot {
 	ref: string | undefined
 }
 
-export class Scheduler {
+export class SchedulerTimezone {
 	protected params: AvailabilityParams;
 	protected gloabalTimezone: any;
 	protected daysOfWeek: string[] = [

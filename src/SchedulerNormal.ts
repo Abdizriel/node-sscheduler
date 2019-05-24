@@ -400,7 +400,7 @@ export class SchedulerNormal {
 									dayAvailability.push({
 											time: timeSlotStart.format('HH:mm'),
 											available: isAvailable,
-											reference: daySchedule.reference
+											reference: timeRef ? timeRef : daySchedule.reference
 									});
 
 									timeSlotStart.add({ minutes: this.params.interval });

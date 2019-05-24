@@ -161,6 +161,7 @@ export class Scheduler {
 				} else {
 					interval.from = moment(unavailability.from, 'YYYY-MM-DD HH:mm');
 					interval.to = moment(unavailability.to, 'YYYY-MM-DD HH:mm');
+					interval.reference = unavailability.reference;
 
 					if (!interval.from.isValid()) {
 						throw new Error('unavailability "from" must be a date in the format YYYY-MM-DD HH:mm');

@@ -22,7 +22,7 @@ interface Interval {
 
 export interface ScheduleSpecificDate extends Interval {
     date: string|moment.Moment;
-    timezone: any;
+    timezone?: any;
 }
 
 interface Allocated {
@@ -39,7 +39,7 @@ export interface TimeAvailability {
     time: string;
     available: boolean;
     reference?: any;
-    timezone: string;
+    timezone?: string;
 }
 
 export interface Availability {
@@ -51,7 +51,7 @@ interface Params {
     to: string|moment.Moment;
     interval: number;
     duration: number;
-    timezone: string;
+    timezone?: string;
 }
 
 export interface AvailabilityParams extends Params{
